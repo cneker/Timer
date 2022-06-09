@@ -12,6 +12,7 @@
             <Setter Property="ItemsControl.FontWeight" Value="DemiBold"/>
         </Style>
     </Window.Resources>
+    
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition/>
@@ -19,8 +20,22 @@
         </Grid.RowDefinitions>
         <TextBlock Grid.Row="0" Text="{Binding Time, Mode=OneWay}" FontSize="70" Width="300" Background="Coral" HorizontalAlignment="Center" Height="92" VerticalAlignment="Center"/>
         <StackPanel Height="60" Width="320" Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <Button Content="Start / Stop" Height="60" Width="140" Click="Stop_Start" />
+            <Button Content="Start / Stop" IsEnabled="{Binding IsStartStopButtonEnabled, Mode=OneWay}" Height="60" Width="140" Click="Stop_Start" />
             <Button Margin="40, 0" Content="Pause / Resume" IsEnabled="{Binding IsPauseResumeButtonEnabled, Mode=OneWay}" Height="60" Width="140" Click="Pause_Resume"/>
         </StackPanel>
+
+        <Menu Height="20" VerticalAlignment="Top">
+            <MenuItem Header="Settings">
+                <MenuItem Header="Set timer's time">
+                    <TextBox Text="{Binding AllTime}"/>
+                </MenuItem>
+            </MenuItem>
+        </Menu>
+        
+        <StatusBar Grid.Row="1" VerticalAlignment="Bottom" Height="30" >
+            <StatusBarItem>
+                <TextBlock Text="{Binding Status, Mode=OneWay}" Height="15" Width="50" Foreground="Black" FontWeight="DemiBold" Visibility="Visible"/>
+            </StatusBarItem>
+        </StatusBar>
     </Grid>
 </Window>

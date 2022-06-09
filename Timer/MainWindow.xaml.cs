@@ -18,8 +18,9 @@ namespace Timer
         private bool _isStarted = false;
         private bool _isPaused = false;
         private bool _isPauseResumeButtonEnabled = false;
+        private bool _isStartStopButtonEnabled = false;
 
-        private TimeSpan _allTime = TimeSpan.FromMinutes(60);
+        private TimeSpan _allTime;
         private DateTime _startTime;
         private TimeSpan _timeToEnd;
         private DateTime _pauseTime;
@@ -27,6 +28,43 @@ namespace Timer
         public string Time
         {
             get => _timeToEnd.ToString("hh\\:mm\\:ss");
+        }
+
+        public string Status
+        {
+            get
+            {
+                string status = string.Empty;
+                if (_isStarted && _isPaused)
+                    status = "Paused";
+                if (_isStarted && !_isPaused)
+                    status = "Started";
+                if (!_isStarted)
+                    status = "Stopped";
+                return status;
+            }
+        }
+
+        public string AllTime
+        {
+            get => _allTime.ToString();
+            set
+            {
+                if (TimeSpan.TryParse(value, out TimeSpan allTime))
+                {
+                    _allTime = allTime;
+                    if (_allTime <= TimeSpan.Zero)
+                    {
+                        IsStartStopButtonEnabled = false;
+                    }
+                    else
+                        IsStartStopButtonEnabled = true;
+                }
+                else
+                    _allTime = TimeSpan.FromMinutes(60);
+                TimeToEnd = _allTime;
+                OnPropertyChanged();
+            }
         }
 
         public TimeSpan TimeToEnd
@@ -51,14 +89,24 @@ namespace Timer
             set
             {
                 _isPauseResumeButtonEnabled = value;
-                OnPropertyChanged("IsPauseResumeButtonEnabled");
+                OnPropertyChanged();
+            }
+        }
+
+        public bool IsStartStopButtonEnabled
+        {
+            get => _isStartStopButtonEnabled;
+            set
+            {
+                _isStartStopButtonEnabled = value;
+                OnPropertyChanged();
             }
         }
 
         public MainWindow()
         {
             InitializeComponent();
-            _player = new SoundPlayer(@"..\..\..\media\stopsound.wav");
+            _player = new SoundPlayer(@"media\stopsound.wav");
             _timer = new DispatcherTimer();
             _timer.Tick += delegate
             {
@@ -67,6 +115,7 @@ namespace Timer
                 TimeToEnd = _allTime.Subtract(sub);
             };
             _timer.Interval = TimeSpan.FromMilliseconds(15);
+            AllTime = TimeSpan.Zero.ToString();
             TimeToEnd = _allTime;
             DataContext = this;
         }
@@ -76,13 +125,11 @@ namespace Timer
             if(_isStarted)
             {
                 StopTimer();
-                return;
             }
             else
             {
                 Start();
             }
-            _isStarted = !_isStarted;
         }
 
         private void Pause_Resume(object sender, RoutedEventArgs e)
@@ -99,6 +146,7 @@ namespace Timer
                 _pauseTime = DateTime.Now;
             }
             _isPaused = !_isPaused;
+            OnPropertyChanged("Status");
         }
 
         private void Start()
@@ -106,14 +154,18 @@ namespace Timer
             _startTime = DateTime.Now;
             _timer.Start();
             IsPauseResumeButtonEnabled = true;
+            _isStarted = true;
+            OnPropertyChanged("Status");
         }
         private void StopTimer()
         {
             _timer.Stop();
             _isPaused = false;
             _isStarted = false;
-            TimeToEnd = _allTime;
             IsPauseResumeButtonEnabled = false;
+            IsStartStopButtonEnabled = false;
+            AllTime = TimeSpan.Zero.ToString();
+            OnPropertyChanged("Status");
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
