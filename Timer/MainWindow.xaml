@@ -5,7 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Timer"
         mc:Ignorable="d"
-        Title="Timer" Height="300" Width="500">
+        Title="Timer" Height="300" Width="500"
+        Icon="icon.png">
     <Window.Resources>
         <Style TargetType="Button">
             <Setter Property="ItemsControl.FontSize" Value="17"/>
@@ -18,23 +19,22 @@
             <RowDefinition/>
             <RowDefinition/>
         </Grid.RowDefinitions>
-        <TextBlock Grid.Row="0" Text="{Binding Time, Mode=OneWay}" FontSize="70" Width="300" Background="Coral" HorizontalAlignment="Center" Height="92" VerticalAlignment="Center"/>
+        <StackPanel Grid.Row="0">
+            <TextBlock Grid.Row="0" Text="{Binding Time, Mode=OneWay}" FontSize="70" Width="257" Background="Coral" HorizontalAlignment="Center" Height="92" VerticalAlignment="Center"/>
+            <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Center" Visibility="{Binding IsTimeVisible, Mode=OneWay}">
+                <TextBlock Text="enter --->" FontSize="20"/>
+                <TextBox Grid.Row="0" Height="35" Width="100" Text="{Binding AllTime, Mode=OneWay}" FontSize="25" MaxLength="8" TextChanged="TextBox_TextChanged"/>
+                <TextBlock Text="&lt;--- enter" FontSize="20"/>
+            </StackPanel>
+        </StackPanel>
         <StackPanel Height="60" Width="320" Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <Button Content="Start / Stop" IsEnabled="{Binding IsStartStopButtonEnabled, Mode=OneWay}" Height="60" Width="140" Click="Stop_Start" />
+            <Button Content="Start / Stop" IsEnabled="{Binding IsStartStopButtonEnabled, Mode=OneWay}" Height="60" Width="140" Click="Stop_Start"/>
             <Button Margin="40, 0" Content="Pause / Resume" IsEnabled="{Binding IsPauseResumeButtonEnabled, Mode=OneWay}" Height="60" Width="140" Click="Pause_Resume"/>
         </StackPanel>
 
-        <Menu Height="20" VerticalAlignment="Top">
-            <MenuItem Header="Settings">
-                <MenuItem Header="Set timer's time">
-                    <TextBox Text="{Binding AllTime}"/>
-                </MenuItem>
-            </MenuItem>
-        </Menu>
-        
         <StatusBar Grid.Row="1" VerticalAlignment="Bottom" Height="30" >
             <StatusBarItem>
-                <TextBlock Text="{Binding Status, Mode=OneWay}" Height="15" Width="50" Foreground="Black" FontWeight="DemiBold" Visibility="Visible"/>
+                <TextBlock Text="{Binding Status, Mode=OneWay}" Height="15" Width="70" Foreground="Black" FontWeight="DemiBold" Visibility="Visible"/>
             </StatusBarItem>
         </StatusBar>
     </Grid>

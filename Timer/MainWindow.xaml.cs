@@ -2,7 +2,9 @@
 using System.ComponentModel;
 using System.Media;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Threading;
 
 namespace Timer
@@ -14,11 +16,13 @@ namespace Timer
     {
         private DispatcherTimer _timer;
         private SoundPlayer _player;
+        private string _status = "Stopped";
 
         private bool _isStarted = false;
         private bool _isPaused = false;
         private bool _isPauseResumeButtonEnabled = false;
         private bool _isStartStopButtonEnabled = false;
+        private Visibility _isTimeVIsible = Visibility.Visible;
 
         private TimeSpan _allTime;
         private DateTime _startTime;
@@ -27,21 +31,16 @@ namespace Timer
         
         public string Time
         {
-            get => _timeToEnd.ToString("hh\\:mm\\:ss");
+            get => _timeToEnd.ToString();
         }
 
         public string Status
         {
-            get
+            get => _status;
+            set
             {
-                string status = string.Empty;
-                if (_isStarted && _isPaused)
-                    status = "Paused";
-                if (_isStarted && !_isPaused)
-                    status = "Started";
-                if (!_isStarted)
-                    status = "Stopped";
-                return status;
+                _status = value;
+                OnPropertyChanged();
             }
         }
 
@@ -50,20 +49,21 @@ namespace Timer
             get => _allTime.ToString();
             set
             {
-                if (TimeSpan.TryParse(value, out TimeSpan allTime))
+                if (TimeSpan.TryParse(value, out TimeSpan allTime) && CheckForValidTimeFormat(value))
                 {
                     _allTime = allTime;
-                    if (_allTime <= TimeSpan.Zero)
-                    {
-                        IsStartStopButtonEnabled = false;
-                    }
-                    else
-                        IsStartStopButtonEnabled = true;
+                    Status = "Stopped";
                 }
                 else
-                    _allTime = TimeSpan.FromMinutes(60);
+                {
+                    _allTime = TimeSpan.Zero;
+                    Status = "Invalid time";
+                }
+                if (_allTime > TimeSpan.Zero)
+                    IsStartStopButtonEnabled = true;
+                else
+                    IsStartStopButtonEnabled = false;
                 TimeToEnd = _allTime;
-                OnPropertyChanged();
             }
         }
 
@@ -80,6 +80,16 @@ namespace Timer
                 else
                     _timeToEnd = value;
                 OnPropertyChanged("Time");
+            }
+        }
+
+        public Visibility IsTimeVisible
+        {
+            get => _isTimeVIsible;
+            set
+            {
+                _isTimeVIsible = value;
+                OnPropertyChanged();
             }
         }
 
@@ -139,11 +149,13 @@ namespace Timer
                 var sub = DateTime.Now.Subtract(_pauseTime);
                 _startTime = _startTime.Add(sub);
                 _timer.Start();
+                Status = "Started";
             }
             else
             {
                 _timer.Stop();
                 _pauseTime = DateTime.Now;
+                Status = "Paused";
             }
             _isPaused = !_isPaused;
             OnPropertyChanged("Status");
@@ -154,8 +166,9 @@ namespace Timer
             _startTime = DateTime.Now;
             _timer.Start();
             IsPauseResumeButtonEnabled = true;
+            IsTimeVisible = Visibility.Hidden;
             _isStarted = true;
-            OnPropertyChanged("Status");
+            Status = "Started";
         }
         private void StopTimer()
         {
@@ -164,14 +177,23 @@ namespace Timer
             _isStarted = false;
             IsPauseResumeButtonEnabled = false;
             IsStartStopButtonEnabled = false;
+            IsTimeVisible = Visibility.Visible;
             AllTime = TimeSpan.Zero.ToString();
-            OnPropertyChanged("Status");
+            Status = "Stopped";
+            OnPropertyChanged("AllTime");
         }
+
+        private bool CheckForValidTimeFormat(string time) => Regex.IsMatch(time, @"\d{2}:\d{2}:\d{2}") && int.Parse(time.Split(':')[0]) < 24;
 
         public event PropertyChangedEventHandler? PropertyChanged;
         private void OnPropertyChanged([CallerMemberName] string name = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+
+        private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            AllTime = ((TextBox)sender).Text;
         }
     }
 }
